@@ -1,0 +1,9 @@
+In the server part we realise each client must connect so this is what we do
+when a client connects to the server he immediately sends data of his id if it
+is empty we generate one for him and send it back thus breaking
+the complexity of heartbeat
+
+All right hear me out here. We will change the way we view heartbeat the client
+does not need to send his heartbeat but when the server want to send data he sends
+a heartbeat message those who do not reply are automatically removed from the list
+and this can also be done every timeout seconds

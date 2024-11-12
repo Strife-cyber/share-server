@@ -24,7 +24,7 @@ def request_file(client_socket: socket.socket, filename: str) -> None:
         response = send_request(client_socket, {"type": "request", "filename": filename})
         response_status = response.get("status")
 
-        if response_status == "pending":
+        if response_status == "request":
             print(f"[INFO] {response.get('message')}")
         elif response_status == "ready":
             transfer_port = response.get("transfer_port")

@@ -1,0 +1,31 @@
+# Project Overview
+
+The goal is to create a peer-to-peer (P2P) file-sharing system where users can share files directly with each other. Think of it like a mini version of BitTorrent. The project involves clients connecting over the local network (or the internet, if you’d like) to share, request, and transfer files.
+
+Core Features to Implement
+1. Peer Discovery:
+    Implement a way for clients (peers) to discover each other on the network. You could use a simple central server (tracker) that registers each client and lets others know who is online, or make it fully decentralized by using UDP broadcasting for peer discovery.
+
+2. File Chunking:
+    Split large files into smaller chunks to make transfers efficient. This also helps with resuming downloads if there are any interruptions, allowing you to learn how to handle partial data transfers.
+
+3. File Sharing & Searching:
+    Enable clients to share a list of files they have and allow others to search for specific files or chunks of files. Implement a way to check the availability of files across peers.
+
+4. Chunk Downloading and Verification:
+    Let clients download chunks from multiple peers simultaneously, speeding up transfers. You’ll also need to verify each chunk using hash functions (e.g., SHA-256) to ensure data integrity.
+
+5. Error Handling and Resuming Transfers:
+    Handle network interruptions and let clients resume transfers from where they left off. This will help you learn about network resilience and error-handling mechanisms.
+
+6. Encryption and Security:
+    Add optional encryption for file transfers and authentication to prevent unauthorized access. This would add a layer of privacy and allow you to explore secure data transmission protocols.
+
+# Concepts and Skills You'll Learn
+
+* Socket Programming: Use Python's socket module for TCP/UDP communication between peers.
+* Multithreading: Handle multiple connections and file transfers simultaneously by using Python’s threading (or asyncio for asynchronous I/O).
+* Data Serialization: Use formats like JSON or Protocol Buffers to serialize and deserialize data sent over the network.
+* Error Handling & Data Integrity: Implement mechanisms to ensure file integrity and handle network failures gracefully.
+* Basic Cryptography: Secure your file transfers and authenticate users with libraries like cryptography or ssl.
+

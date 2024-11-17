@@ -5,9 +5,10 @@ def request_file(clients: [], filename: str) -> None:
     :param filename: this is the name of the file to request
     :return: None
     """
-    request = json.dumps({"type": "request", "filename": filename})
-    for client in clients:
-        client.sendall(request.encode('utf-8'))  # Ensure the request is encoded before sending
+    # Correct request format and format used to send the data to other clients
+    request = json.dumps({"status": "request", "message": f"request for file {filename}"})
+    for (conn, _) in clients:
+        conn.sendall(request.encode('utf-8'))  # Ensure the request is encoded before sending
     print(f"[REQUEST] file request for {filename} sent successfully")
 
 def receive_file(conn, filename: str, buffer: int = 1024, save_path="uploads", session=None) -> None:

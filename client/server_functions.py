@@ -24,7 +24,7 @@ def request_file(client_socket: socket.socket, filename: str) -> None:
         response = send_request(client_socket, {"type": "request", "filename": filename})
         response_status = response.get("status")
 
-        if response_status == "request":
+        if response_status == "pending":
             print(f"[INFO] {response.get('message')}")
         elif response_status == "ready":
             transfer_port = response.get("transfer_port")
@@ -45,7 +45,7 @@ def request_file(client_socket: socket.socket, filename: str) -> None:
         elif response_status == "error":
             print(f"[ERROR] {response.get('message')}")
         else:
-            print("[ERROR] Unexpected response from server")
+            print("[ERROR] Unexpected response from server", response)
 
     except Exception as e:
         print(f"[ERROR] Failed to request file '{filename}': {e}")

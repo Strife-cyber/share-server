@@ -47,7 +47,7 @@ def create_response(status, message, filename, transfer_port=None):
         response["transfer_port"] = transfer_port
     return response
 
-def decode(json_data, conn: socket.socket, clients) -> None:
+def decode(json_data, conn: socket.socket, clients: []) -> None:
     """
     Decodes a request and processes it.
     :param json_data: The JSON data from the client request.

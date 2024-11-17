@@ -16,14 +16,14 @@ awaits would have been easier but now i don't get it so it can fuck off what mat
 for now is the fact that we have to fix this issues
 
 ISSUES 12/11/2024
-1. When a client disconnects the list is not share to other clients
+1. When a client disconnects the list is not shared to other clients Done
 2. A client can easily request a file but the notification comes as an error
 3. Other clients cannot even see a client has request a file
 4. The client cannot yet upload a file it gets blocked once we start reading the file
 
 Target date to resolve each problem
 -- We estimate a 2wks period to resolve all this issues
-1 -> 2 days
+1 -> 2 days Done
 2 -> 2 days
 3 -> 2 days
 4 -> 5 days

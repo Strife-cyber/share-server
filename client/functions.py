@@ -5,13 +5,6 @@ from client.data_function import read_json, verify_hash, hash_string, append_jso
 
 
 def status(email: str, password: str) -> (bool, str):
-    """
-    This function reads the data json file and checks for the user then returns
-    his id if he exists
-    :param email: this is the email of the user
-    :param password: this is the password of the user
-    :return: returns a tuple of bool and str
-    """
     clients: list = read_json()
     for client in clients:
         if client['email'] == email and verify_hash(password, client['password']):
@@ -20,20 +13,13 @@ def status(email: str, password: str) -> (bool, str):
 
 
 def register(email: str, password: str) -> (bool, str):
-    """
-    This function registers a new user
-    :param email: the user's email
-    :param password: the user's password
-    :return: a tuple of bool and a string which is the id
-    """
     try:
         new_id: str = str(uuid.uuid4())
         new_client = {"email": email, "password": hash_string(password), "id": new_id}
         append_json(new_client)
-
         return True, new_id
     except Exception as e:
-        print("An exception occurred: {}".format(e))
+        print(f"An exception occurred: {e}")
         return False, None
 
 
@@ -69,10 +55,10 @@ def connect(ip: str, port: int) -> socket:
 
 
 def disconnect(client_socket: socket) -> None:
-    """
-    Closes the connection to the server
-    :param client_socket: this is the client socket
-    :return: None
-    """
-    client_socket.close()
-    print(f"[DISCONNECT] disconnected from server")
+    try:
+        client_socket.sendall(b"DISCONNECT")
+    except:
+        pass  # Ignore any errors during disconnection
+    finally:
+        client_socket.close()
+        print(f"[DISCONNECT] Disconnected from server")

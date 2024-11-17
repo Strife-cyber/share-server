@@ -89,7 +89,7 @@ def receive_response(client_socket: socket.socket, notifications: list) -> None:
         try:
             response = json.loads(response_data)
             notifications.append({datetime.now().strftime("%Y-%m-%d %H:%M:%S"): response.get('message')})
-        except json.JSONDecodeError:
-            print("[ERROR] Invalid JSON response from server")
+        except json.JSONDecodeError: # Solved the error of the list not being able to broadcast by adding the line below
+            notifications.append({datetime.now().strftime("%Y-%m-%d %H:%M:%S"): f"Updated client list: {response_data}"})
     except Exception as e:
         print(f"[ERROR] Failed to receive response from server: {e}")

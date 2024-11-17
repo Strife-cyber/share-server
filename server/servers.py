@@ -27,7 +27,7 @@ class Server:
 
     def broadcast_list(self):
         """Broadcast the list of active clients to all connected clients."""
-        peer_list = [(client_id, conn) for client_id, conn in self.CLIENTS.items()]
+        peer_list = [(client_id, addr) for client_id, (conn, addr) in self.CLIENTS.items()]
         peer_data = str(peer_list).encode('utf-8')
 
         for client_id, (conn, _) in self.CLIENTS.items():
@@ -36,11 +36,12 @@ class Server:
                 print(f"[BROADCAST] Client list {peer_list} broad casted to {client_id}.")
             except Exception as e:
                 print(f"[ERROR] Could not send data to {client_id}: {e}")
+                self.disconnect_client(client_id)
 
     def check_clients(self):
         """Check if clients are still connected by sending a heartbeat."""
         disconnected_clients = []
-        for client_id, conn in self.CLIENTS.items():
+        for client_id, (conn, _) in self.CLIENTS.items():
             try:
                 conn.send(b'')  # Send a small packet to check the connection
             except Exception as e:
@@ -48,7 +49,8 @@ class Server:
                 disconnected_clients.append(client_id)
 
         for client_id in disconnected_clients:
-            del self.CLIENTS[client_id]
+            self.disconnect_client(client_id)
+
         if disconnected_clients:
             self.broadcast_list()
 
@@ -63,6 +65,7 @@ class Server:
                 decode(data, conn, self.CLIENTS.values())
             except Exception as e:
                 print(f"[ERROR] Error handling {client_id}: {e}. Checking active clients...")
+                self.check_clients()
                 break  # Exit loop if there's an error
         # Clean up on client disconnect
         self.disconnect_client(client_id)
@@ -111,13 +114,15 @@ class Server:
             while self.running:
                 try:
                     conn, addr = server_socket.accept()
-                    client_id = conn.recv(1024).decode('utf-8')
+                    client_id = conn.recv(1024).decode('utf-8').strip()
 
+                    # If client ID is empty or not received correctly, generate a new one
                     if not client_id:
                         client_id = str(uuid4())
                         conn.sendall(client_id.encode('utf-8'))
 
-                    self.CLIENTS[client_id] = conn
+                    # Store (conn, addr) tuple in CLIENTS dictionary
+                    self.CLIENTS[client_id] = (conn, addr)
                     print(f"[CONNECT] New connection from {client_id} at {addr}")
                     executor.submit(self.handle_client, conn, client_id)
 

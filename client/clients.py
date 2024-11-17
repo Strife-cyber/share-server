@@ -17,31 +17,35 @@ class Client:
 
     def listen(self):
         while not self.stop.is_set():
-            if self.pause.is_set():
-                receive_response(self.client_socket, self.notifications)
-            else:
-                time.sleep(1)
+            try:
+                if self.pause.is_set():
+                    receive_response(self.client_socket, self.notifications)
+                else:
+                    time.sleep(1)
+            except Exception as e:
+                print(f"[ERROR] Listening error: {e}")
+                self.stop.set()  # Stop the client if there's a critical error
 
     def show_notif(self):
-        print("=======================[NOTIFICATIONS]======================]\n")
+        print("=======================[NOTIFICATIONS]======================\n")
         if self.notifications:
             for notification in self.notifications:
                 print(notification)
         else:
-            print("no new notifications")
+            print("No new notifications")
 
     def start(self):
         if not self.client_socket:
             print("[ERROR] Unable to connect to the server. Exiting...")
             sys.exit(1)
 
+        self.pause.set()
         notification_thread = threading.Thread(target=self.listen, daemon=True)
         notification_thread.start()
 
         try:
             while True:
-                action = input("\n1. to request a file \n2. to upload a file "
-                               "\n3. to view notifications \n4. to disconnect: \n").strip().lower()
+                action = input("\n1. Request a file\n2. Upload a file\n3. View notifications\n4. Disconnect\n").strip()
                 if action == "1":
                     filename = input("Enter file name to request: ").strip()
                     self.pause.clear()
@@ -61,9 +65,9 @@ class Client:
                 else:
                     print("[ERROR] Invalid action")
         except Exception as e:
-            print("[ERROR] {}".format(e))
+            print(f"[ERROR] {e}")
         finally:
-            self.stop.clear()
+            self.stop.set()  # Set stop event for the listener thread
             notification_thread.join()
             disconnect(self.client_socket)
             print("[DISCONNECT] Disconnected from server...")

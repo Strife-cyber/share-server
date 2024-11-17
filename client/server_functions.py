@@ -1,5 +1,6 @@
-import socket
+import os
 import json
+import socket
 from datetime import datetime
 
 def send_request(client_socket: socket.socket, request: dict) -> dict:
@@ -29,12 +30,13 @@ def request_file(client_socket: socket.socket, filename: str) -> None:
         elif response_status == "ready":
             transfer_port = response.get("transfer_port")
             print(f"[INFO] {response.get('message')} on port {transfer_port}")
+            file_path = os.path.join('downloads', filename)
 
             # Connect to the provided transfer port to receive file data
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as transfer_socket:
                 transfer_socket.connect(('127.0.0.1', transfer_port))
 
-                with open(filename, 'wb') as file:
+                with open(file_path, 'wb') as file:
                     while True:
                         data = transfer_socket.recv(1024)
                         if not data:

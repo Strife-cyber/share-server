@@ -19,11 +19,13 @@ ISSUES 12/11/2024
 1. When a client disconnects the list is not shared to other clients -- Done
 2. A client can easily request a file but the notification comes as an error -- Done
 3. Other clients cannot even see a client has request a file -- Done
-4. The client cannot yet upload a file it gets blocked once we start reading the file
+4. The client cannot yet upload a file it gets blocked once we start reading the file -- Done
+5. Slight disconnection problem
 
 Target date to resolve each problem
 -- We estimate a 2wks period to resolve all this issues
 1 -> 2 days Done
 2 -> 2 days Done
 3 -> 2 days Done
-4 -> 5 days
+4 -> 5 days Done
+5 -> 1 day

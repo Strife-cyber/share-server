@@ -88,10 +88,7 @@ def send_file(conn: socket.socket, filename: str, buffer: int = 1024, session=No
         # Open and send file data
         with open(file_path, "rb") as file:
             print(f"[SENDING FILE] Starting to send {filename}")
-            while True:
-                data = file.read(buffer)
-                if not data:
-                    break  # Stop when the file is completely read
+            while data := file.read(buffer):
                 conn.sendall(data)
 
         print(f"[SENDING FILE] {filename} sent successfully")

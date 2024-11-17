@@ -72,13 +72,21 @@ def decode(json_data, conn: socket.socket, clients: []) -> None:
                     response = create_response("pending", f"Requesting {filename} from peers.", filename)
                 else:
                     transfer_socket, transfer_port = setup_transfer_socket()
+                    print(f"[TRANSFER] Readying transfer at port {transfer_port}")
                     response = create_response("ready", f"{filename} is ready for download.", filename, transfer_port)
+                    print("[TRANSFER] Sending response for channel creation to client")
+                    conn.sendall(json.dumps(response).encode('utf-8'))
+                    print(f"[TRANSFER] finalising channel creation ...")
                     start_transfer_thread(transfer_socket, filename, session, send_file)
 
             # Handle file upload
             elif request_type == "upload":
                 transfer_socket, transfer_port = setup_transfer_socket()
+                print(f"[TRANSFER] Readying transfer at port {transfer_port}")
                 response = create_response("ready", f"{filename} is ready for upload.", filename, transfer_port)
+                print("[TRANSFER] Sending response for channel creation to client")
+                conn.sendall(json.dumps(response).encode('utf-8'))
+                print(f"[TRANSFER] finalising channel creation ...")
                 start_transfer_thread(transfer_socket, filename, session, receive_file)
 
             # Unknown request type

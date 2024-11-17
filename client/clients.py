@@ -55,6 +55,7 @@ class Client:
                     filename = input("Enter file name to upload: ").strip()
                     filepath = input("Enter file path: ").strip()
                     self.pause.clear()
+                    print(filename, filepath)
                     upload_file(self.client_socket, filename, filepath)
                     self.pause.set()
                 elif action == "3":

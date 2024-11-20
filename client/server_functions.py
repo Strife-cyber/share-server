@@ -52,6 +52,7 @@ def request_file(client_socket: socket.socket, filename: str) -> None:
     except Exception as e:
         print(f"[ERROR] Failed to request file '{filename}': {e}")
 
+
 def upload_file(client_socket: socket.socket, filename: str, filepath: str, buffer_size: int = 1024) -> None:
     """
     Uploads a file to the server.
@@ -79,19 +80,38 @@ def upload_file(client_socket: socket.socket, filename: str, filepath: str, buff
     except Exception as e:
         print(f"[ERROR] Failed to upload file '{filename}': {e}")
 
-def receive_response(client_socket: socket.socket, notifications: list) -> None:
+
+def receive_response(client_socket: socket.socket, notifications: list, peer_list: dict) -> None:
     """
     Receives server notifications and appends them to a list.
     :param client_socket: The socket connected to the server
     :param notifications: The list of notifications
+    :param peer_list: The peer list (modified in place if updated)
     :return: None
     """
     try:
+        # Receive data from the server
         response_data = client_socket.recv(1024).decode('utf-8')
+
         try:
+            # Try to parse the response data as JSON
             response = json.loads(response_data)
-            notifications.append({datetime.now().strftime("%Y-%m-%d %H:%M:%S"): response.get('message')})
-        except json.JSONDecodeError: # Solved the error of the list not being able to broadcast by adding the line below
-            notifications.append({datetime.now().strftime("%Y-%m-%d %H:%M:%S"): f"Updated client list: {response_data}"})
+
+            # Append the message to the notifications
+            notifications.append({
+                datetime.now().strftime("%Y-%m-%d %H:%M:%S"): response.get('message')
+            })
+
+            # If the response is of type "list", update the peer list
+            if response.get("type") == "list":
+                # Update the peer list in place with the received list
+                peer_list.update({client_id: port for client_id, port in response.get("message", [])})
+
+        except json.JSONDecodeError:
+            # If the data is not JSON, treat it as a raw message
+            notifications.append({
+                datetime.now().strftime("%Y-%m-%d %H:%M:%S"): f"Updated client list: {response_data}"
+            })
+
     except Exception as e:
         print(f"[ERROR] Failed to receive response from server: {e}")

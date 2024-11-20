@@ -1,3 +1,4 @@
+import json
 import socket
 import threading
 import time
@@ -27,8 +28,8 @@ class Server:
 
     def broadcast_list(self):
         """Broadcast the list of active clients to all connected clients."""
-        peer_list = [(client_id, addr) for client_id, (conn, addr) in self.CLIENTS.items()]
-        peer_data = str(peer_list).encode('utf-8')
+        peer_list = json.dumps({'type': 'list', 'message': [(client_id, port) for client_id, (conn, port) in self.CLIENTS.items()]})
+        peer_data = peer_list.encode('utf-8')
 
         for client_id, (conn, _) in self.CLIENTS.items():
             try:
@@ -114,7 +115,9 @@ class Server:
             while self.running:
                 try:
                     conn, addr = server_socket.accept()
-                    client_id = conn.recv(1024).decode('utf-8').strip()
+                    client_json = json.loads(conn.recv(1024).decode('utf-8'))
+                    client_id = client_json['id']
+                    client_port = client_json['port']
 
                     # If client ID is empty or not received correctly, generate a new one
                     if not client_id:
@@ -122,8 +125,9 @@ class Server:
                         conn.sendall(client_id.encode('utf-8'))
 
                     # Store (conn, addr) tuple in CLIENTS dictionary
-                    self.CLIENTS[client_id] = (conn, addr)
+                    self.CLIENTS[client_id] = (conn, client_port)
                     print(f"[CONNECT] New connection from {client_id} at {addr}")
+                    self.broadcast_list()
                     executor.submit(self.handle_client, conn, client_id)
 
                 except Exception as e:

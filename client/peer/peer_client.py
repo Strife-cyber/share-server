@@ -2,32 +2,30 @@ import socket
 import threading
 import json
 from datetime import datetime
-from peer_functions import send_message
+from client.peer.peer_functions import send_message
 
 # Constants
 BUFFER_SIZE = 1024
 
-# Utility Functions (Assumed Available)
-# check_presence, send_message, listen
+class PeerClient:
+    def __init__(self, port=None):
+        self.messages = []
+        self.notifications = []
+        self.connections = {}  # Dictionary to store peer sockets {peer_id: socket}
+        self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.client_socket.bind(("localhost", port or 0))  # Bind to the given port or let the OS pick
+        self.port = self.client_socket.getsockname()[1]  # Retrieve the actual port bound
+        self.client_socket.listen()  # Allow incoming connections
+        print(f"[PEER] Peer client connected on port {self.port}")
 
-def start_client(port):
-    messages = []
-    notifications = []
-    connections = {}  # Dictionary to store peer sockets {peer_id: socket}
-
-    # Socket for this client to listen for incoming connections
-    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client_socket.bind(("localhost", port))
-    client_socket.listen(10)  # Allow up to 10 connections
-    print(f"[CLIENT {port}] Listening on port {port}...")
-
-    def accept_connections():
+    def accept_connections(self):
+        """Accept incoming peer connections."""
         while True:
-            conn, addr = client_socket.accept()
-            print(f"[CLIENT {port}] Incoming connection from {addr}")
-            threading.Thread(target=handle_peer, args=(conn,), daemon=True).start()
+            conn, addr = self.client_socket.accept()
+            print(f"[CLIENT {self.port}] Incoming connection from {addr}")
+            threading.Thread(target=self.handle_peer, args=(conn,), daemon=True).start()
 
-    def handle_peer(conn):
+    def handle_peer(self, conn):
         """Handle communication with a single peer."""
         try:
             while True:
@@ -35,8 +33,8 @@ def start_client(port):
                 if not data:
                     break
                 message = json.loads(data)
-                messages.append(message)
-                notifications.append({
+                self.messages.append(message)
+                self.notifications.append({
                     datetime.now().strftime("%Y-%m-%d %H:%M:%S"): f"[MESSAGE] {message['id']}: {message['message']}"
                 })
                 print(f"[RECEIVED from {message['id']}] {message['message']}")
@@ -45,62 +43,44 @@ def start_client(port):
         finally:
             conn.close()
 
-    def connect_to_peer(peer_id, peer_port):
+    def connect_to_peer(self, peer_id, peer_port):
         """Connect to a peer."""
         try:
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             sock.connect(("localhost", peer_port))
-            connections[peer_id] = sock
-            print(f"[CLIENT {port}] Connected to peer {peer_id} on port {peer_port}")
-            threading.Thread(target=handle_peer, args=(sock,), daemon=True).start()
+            self.connections[peer_id] = sock
+            print(f"[CLIENT {self.port}] Connected to peer {peer_id} on port {peer_port}")
+            threading.Thread(target=self.handle_peer, args=(sock,), daemon=True).start()
         except Exception as e:
             print(f"[ERROR] Could not connect to peer {peer_id} on port {peer_port}: {e}")
 
-    # Start listening for incoming connections
-    threading.Thread(target=accept_connections, daemon=True).start()
+    def show_messages(self):
+        """Display all received messages."""
+        print("[MESSAGES]")
+        for msg in self.messages:
+            print(f"{msg['id']}: {msg['message']}")
 
-    # Command loop
-    while True:
-        print("\n[OPTIONS]")
-        print("1. Connect to a new peer")
-        print("2. Send a message")
-        print("3. Show messages")
-        print("4. Show notifications")
-        choice = input("Enter your choice: ").strip()
+    def show_notifications(self):
+        """Display all notifications."""
+        print("[NOTIFICATIONS]")
+        for notif in self.notifications:
+            for timestamp, message in notif.items():
+                print(f"{timestamp}: {message}")
 
-        if choice == "1":
-            # Connect to a new peer
-            peer_id = input("Enter peer ID: ").strip()
-            peer_port = int(input("Enter peer port: ").strip())
-            connect_to_peer(peer_id, peer_port)
-        elif choice == "2":
-            # Send a message to a peer
-            if not connections:
-                print("[ERROR] No connected peers. Connect to a peer first.")
-                continue
-            print(f"Connected peers: {list(connections.keys())}")
-            peer_id = input("Enter peer ID to message: ").strip()
-            if peer_id not in connections:
-                print("[ERROR] Peer not connected.")
-                continue
-            message = input("Enter your message: ").strip()
-            send_message(connections[peer_id], message, f"Client-{port}", messages)
-        elif choice == "3":
-            # Show all messages
-            print("[MESSAGES]")
-            for msg in messages:
-                print(f"{msg['id']}: {msg['message']}")
-        elif choice == "4":
-            # Show all notifications
-            print("[NOTIFICATIONS]")
-            for notif in notifications:
-                for timestamp, message in notif.items():
-                    print(f"{timestamp}: {message}")
-        else:
-            print("[ERROR] Invalid choice. Try again.")
+    def send_message_to_peer(self, peer_id, message):
+        """Send a message to a peer."""
+        if peer_id not in self.connections:
+            print(f"[ERROR] Peer {peer_id} is not connected.")
+            return
+        send_message(self.connections[peer_id], message, f"Client-{self.port}", self.messages)
 
+    def start(self):
+        """Start the client and the command loop."""
+        # Start listening for incoming connections in a separate thread
+        threading.Thread(target=self.accept_connections, daemon=True).start()
 
 if __name__ == "__main__":
-    # Start a single client
-    client_port = int(input("Enter your client port: ").strip())
-    start_client(client_port)
+    # Start a single client with a custom port or auto-assign a port
+    client_port = int(input("Enter your client port (or press Enter to auto-assign): ").strip() or 0)
+    client = PeerClient(client_port)
+    client.start()

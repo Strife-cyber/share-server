@@ -18,13 +18,14 @@ class Server:
         4. Accepting file uploads from a client
     """
 
-    def __init__(self, broadcast_port=6000, timeout=100):
+    def __init__(self, address, broadcast_port=6000, timeout=100):
         self.FILE_TRANSFER_PORT = 6001
         self.BROADCAST_PORT = broadcast_port
         self.TIMEOUT = timeout
         self.CLIENTS = {}
         self.COUNT = 0
         self.running = True
+        self.ADDRESS = address
 
     def broadcast_list(self):
         """Broadcast the list of active clients to all connected clients."""
@@ -103,7 +104,7 @@ class Server:
     def start(self):
         """Start the server to listen for incoming connections and handle them."""
         server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        server_socket.bind(('0.0.0.0', self.BROADCAST_PORT))
+        server_socket.bind((self.ADDRESS, self.BROADCAST_PORT))
         server_socket.listen()
         print("[SERVER] Listening for incoming connections...")
 
@@ -141,5 +142,5 @@ class Server:
 
 
 if __name__ == '__main__':
-    server = Server()
+    server = Server('0.0.0.0')
     server.start()

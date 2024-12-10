@@ -11,7 +11,7 @@ def main():
         client = Client("127.0.0.1", 6000)
         client.start()
     elif run == "server":
-        server = Server()
+        server = Server('0.0.0.0')
         server.start()
 
 if __name__ == "__main__":

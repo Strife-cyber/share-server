@@ -8,11 +8,20 @@ def main():
     """
     run = input().strip().lower()
     if run == "client":
-        client = Client("127.0.0.1", 6000)
-        client.start()
+        ip = input('Enter IP Address: ').strip()
+        if ip:
+            client = Client(ip, 6000)
+            client.start()
+        else:
+            client = Client("127.0.0.1", 6000)
+            client.start()
     elif run == "server":
-        server = Server('0.0.0.0')
-        server.start()
-
+        ip = input('Enter IP Address: ').strip()
+        if ip:
+            server = Server(address=ip)
+            server.start()
+        else:
+            server = Server('0.0.0.0')
+            server.start()
 if __name__ == "__main__":
     main()
